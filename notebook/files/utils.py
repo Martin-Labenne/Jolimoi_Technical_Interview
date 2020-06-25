@@ -14,14 +14,16 @@ import sqlite3 as sql
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# others
-from datetime import datetime
+import os
+cwd = os.getcwd()
 
 path = "../data/"
 db = path + "artists.db"
 connector = sql.connect("../data/artists.db")
-######## Question 1 ######## 
-topTen = pd.read_sql("""SELECT Name, COUNT(*) AS nbOfArtworks
+
+######## Question 2 ######## 
+def topTenArtists() : 
+    topTen = pd.read_sql("""SELECT Name, COUNT(*) AS nbOfArtworks
                FROM artworks
                WHERE Name NOT NULL
                AND Name NOT LIKE 'Unknown photographer'
@@ -31,7 +33,6 @@ topTen = pd.read_sql("""SELECT Name, COUNT(*) AS nbOfArtworks
             """
             , connector)
 
-def topTenArtists() : 
     sns.set(style="white", context="talk") # general theme
 
     f, ax = plt.subplots(1, 1, figsize=(12, 6), sharex=True)
@@ -48,57 +49,12 @@ def topTenArtists() :
     plt.title("Top 10 artists by the number of artworks")
     plt.tight_layout()
     
-######## Question 2 ######## 
-dimensions = pd.read_sql(""" SELECT IFNULL(`Diameter (cm)`, 0) AS Diameter,
-                                    IFNULL(`Circumference (cm)`, 0) AS Circumference, 
-                                    IFNULL(`Height (cm)`, 0) as Height, 
-                                    IFNULL(`Width (cm)`, 0) AS Width, 
-                                    IFNULL(`Depth (cm)`, 0) AS Depth,
-                                    Name As Artist
-                             FROM artworks 
-                             WHERE Artist IS NOT NULL
-                             AND Artist NOT LIKE '%Unknown%';
-                         """
-                         , connector) 
-artistAndArea = {"Artist" : [], "Area" : []}
-def areafromDiameter(x) :
-    return (np.pi/4)*(x**2)
-def areafromCircumference(x) : 
-    return (x**2)/(4*np.pi)
-def areafromDimensions(x,y,z) : 
-    if ( x*y*z != 0 ) :
-        return 0 # 3D artwork
-    else :
-        xy = x*y
-        yz = y*z
-        xz = x*z
-        if ( xy != 0 or yz != 0 or xz != 0 ) : 
-            return (xy if xy != 0 else (yz if yz != 0 else xz)) # 2D artworks
-        else : 
-            return 0
-        
-indexList = dimensions.index
-for index in indexList : 
-    diameter = dimensions['Diameter'][index]
-    if ( diameter != 0 ) :
-        artistAndArea['Area'].append(areafromDiameter(diameter))
-    else : 
-        circumference = dimensions['Circumference'][index] != 0 
-        if (circumference != 0) : 
-            artistAndArea['Area'].append(areafromCircumference(circumference))
-        else : 
-            artistAndArea['Area'].append(areafromDimensions(dimensions['Height'][index], 
-                                                          dimensions['Width'][index], 
-                                                          dimensions['Depth'][index]))
-    artistAndArea['Artist'].append(dimensions['Artist'][index])
-    
-artistAndArea_df = pd.DataFrame(artistAndArea)
-artistAndArea_df['Area'].replace(to_replace=0, value=np.NaN, inplace=True)
-artistAndArea_df.dropna(subset=['Area'], inplace=True)
-sortedArea = artistAndArea_df.groupby('Artist').agg(['sum'])['Area'].sort_values(by=['sum'], ascending=False)
-sortedRoundedInGoodDimensionArea = (sortedArea/10000).apply(lambda x : round(x,2)) # cm² to m² conversion
-
+######## Question 3 ######## 
 def topTenArtistsByArea() : 
+    artistAndArea_df = pd.read_csv(cwd+"\\files\\artists_and_area.csv")
+    sortedArea = artistAndArea_df.groupby('Artist').agg(['sum'])['Area'].sort_values(by=['sum'], ascending=False)
+    sortedRoundedInGoodDimensionArea = (sortedArea/10000).apply(lambda x : round(x,2)) # cm² to m² conversion
+
     sns.set(style="white", context="talk") # general theme
 
     f, ax = plt.subplots(1, 1, figsize=(13, 6), sharex=True)
@@ -114,3 +70,33 @@ def topTenArtistsByArea() :
 
     plt.title("Top 10 artists who has created the most 2D artwork by total surface area")
     plt.tight_layout()
+       
+######## Question 4 ######## 
+def lifeTimeAquirement() : 
+    alive = pd.read_csv(cwd+"\\files\\aquisition_during_life_alive.csv")
+    dead = pd.read_csv(cwd+"\\files\\aquisition_during_life_dead.csv")
+     
+    sns.set(style="white", context="talk") # general theme
+
+    f, ax = plt.subplots(1, 1, figsize=(10, 6), sharex=True)
+    sns.distplot( alive['Acquisition'], color="blue", label="Still Alive" )
+    sns.distplot( dead['Acquisition'], color="red", label="Alredy Dead" )
+
+    ax.set_xlabel("Acquistion Year")
+    ax.axhline(0, color="k", clip_on=False) 
+    sns.despine(bottom=True)
+
+    plt.title("Aquisition years of artworks during the life time of their artist")
+    plt.legend()
+    plt.tight_layout()    
+    
+######## Question 5 ######## 
+def header() : 
+    return pd.DataFrame({'Artist ID' : [], 'Nationality' : [], 'Gender' : [],
+                         'Birth Year' : [], 'Death Year' : [], 'Area' : [],
+                         'Artwork ID' : [], 'Title' : [], 'Name' : [], 'Date' : [],
+                         'Acquisition Date' : [], 'Credit' : [], 'Catalogue' : [], 
+                         'Classification' : []})
+    
+ 
+######## Question 6 ######## 
