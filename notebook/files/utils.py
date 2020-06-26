@@ -100,3 +100,11 @@ def header() :
     
  
 ######## Question 6 ######## 
+def clusters() : 
+    return pd.DataFrame({'Birth Year' : [1865, 1908, 1942],
+                         'Production Date' : [1912, 1953, 1986], 
+                         'Acquisition Date' : [1966, 1970, 2001], 
+                         'Nationality' : ['French', 'American', 'America'], 
+                         'Gender' : ['Male', 'Male', 'Male'],
+                         'Credit' : ['The Louis E. Stern Collection','The Louis E. Stern Collection','Gift of the artist'], 
+                         'Classification' : ['Photograph','Illustrated Book','Print']})
