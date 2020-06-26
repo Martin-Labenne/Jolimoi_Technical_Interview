@@ -1,6 +1,6 @@
 """
-This file is usful for the report 
-and have no other goal than facilitate readibility in the report
+This file is useful for the report. 
+It have no other goal than facilitate readibility of the report.
 """
 
 # data storage and algebra
@@ -83,6 +83,7 @@ def lifeTimeAquirement() :
     sns.distplot( dead['Acquisition'], color="red", label="Alredy Dead" )
 
     ax.set_xlabel("Acquistion Year")
+    ax.set_ylabel("Proportion")
     ax.axhline(0, color="k", clip_on=False) 
     sns.despine(bottom=True)
 
